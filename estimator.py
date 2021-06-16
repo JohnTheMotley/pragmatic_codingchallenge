@@ -105,21 +105,20 @@ class FaultyMedianAccumulator(Accumulator):
     def __init__(self, windowSize = 1000) -> None:
         super().__init__()
         self.prev = 0
-        self.median = 0
         self.windowSize = windowSize
         self.windowLeft = SortedList()
         self.windowRight = SortedList()     
     
     def accumulate(self, val) -> None:
-        self.prev = self.median
-        if val <= self.median:
-            self.windowLeft.add(val)
-            self.windowRight.add(self.median)
-            self.median = self.windowLeft.pop(-1)
+        self.prev = self.get_current()
+        if val <= self.prev:
+            self.windowLeft.add(val)            
         else:
             self.windowRight.add(val)
-            self.windowLeft.add(self.median)
-            self.median = self.windowRight.pop(0)
+        while len(self.windowLeft) - len(self.windowRight) > 1:
+            self.windowRight.add(self.windowLeft.pop(-1))
+        while len(self.windowRight) - len(self.windowLeft) > 1:
+            self.windowLeft.add(self.windowRight.pop(0))
         if len(self.windowLeft) > self.windowSize:
             leftIndex = len(self.windowLeft) // 2
             rightIndex = len(self.windowLeft)
@@ -130,7 +129,15 @@ class FaultyMedianAccumulator(Accumulator):
             self.windowRight = SortedList([val for val in self.windowRight.islice(leftIndex, rightIndex)])
     
     def get_current(self) -> float:
-        return self.median
+        median = 0.0
+        if len(self.windowLeft) == len(self.windowRight):
+            if len(self.windowLeft) > 0:
+                median = (self.windowLeft[-1] + self.windowRight[0]) / 2
+        elif len(self.windowLeft) > len(self.windowRight):
+            median = self.windowLeft[-1]
+        else:
+            median = self.windowRight[0]
+        return median
 
     def get_previous(self) -> float:
         return self.prev
