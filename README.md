@@ -1,0 +1,5 @@
+This "estimator" takes a stream of numbers from standard input and outputs the running mean, standard deviation, and median of these values. Mean is tracked with the total sum and count so far, so it is accurate. Standard deviation is calculated using Welford's Algorithm, and so is also accurate. Median can be tracked using one of two options. The first keeps all incoming values in a sortedlist in memory, resulting in perfect median but with potentially large memory usage. The second only tracks the first thousand (by default) values on either side of the median, saving on memory for large datasets, but it is not perfectly accurate, and can quickly become completely inaccurate due to value loss.
+
+This program requires the "sortedcontainers" python package. It can be installed using pip, "pip install sortedcontainers". I make use of the SortedList from this package to avoid trying to re-implement the wheel.
+
+This program was made and tested with Python 3.8.7.
